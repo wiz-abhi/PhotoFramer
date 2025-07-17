@@ -122,15 +122,10 @@ body {
   .frame-container.is-empty {
     visibility: hidden;
   }
-
-  @page {
-    size: auto;
-    margin: 0;
-  }
 }
 
 /* Styles for saving the canvas as an image */
-.is-saving .frame-container.is-empty {
+.is-saving .frame-container {
     border-color: transparent;
     background-color: transparent;
 }
