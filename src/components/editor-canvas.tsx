@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, DragEvent, useEffect } from 'react';
-import type { CanvasSize, CanvasLayout } from '@/app/editor/page';
+import type { CanvasSize, CanvasLayout, ObjectFit } from '@/app/editor/page';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { ImageIcon, Trash2, ArrowLeftRight } from 'lucide-react';
@@ -11,14 +11,15 @@ import { Button } from './ui/button';
 interface EditorCanvasProps {
   size: CanvasSize;
   layout: CanvasLayout;
+  globalFit: ObjectFit;
 }
 
 type PlacedImage = {
   src: string;
-  objectFit: 'cover' | 'contain';
+  objectFit: ObjectFit;
 };
 
-export default function EditorCanvas({ size, layout }: EditorCanvasProps) {
+export default function EditorCanvas({ size, layout, globalFit }: EditorCanvasProps) {
   const [rows, cols] = layout.grid;
   const totalFrames = rows * cols;
   const [placedImages, setPlacedImages] = useState<(PlacedImage | null)[]>(Array(totalFrames).fill(null));
@@ -27,6 +28,12 @@ export default function EditorCanvas({ size, layout }: EditorCanvasProps) {
     // Reset canvas when layout or size changes
     setPlacedImages(Array(layout.grid[0] * layout.grid[1]).fill(null));
   }, [layout, size]);
+
+  useEffect(() => {
+    setPlacedImages(currentImages => 
+        currentImages.map(img => img ? { ...img, objectFit: globalFit } : null)
+    );
+  }, [globalFit]);
   
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -37,7 +44,7 @@ export default function EditorCanvas({ size, layout }: EditorCanvasProps) {
     const imageUrl = e.dataTransfer.getData('text/plain');
     if (imageUrl) {
       const newPlacedImages = [...placedImages];
-      newPlacedImages[frameIndex] = { src: imageUrl, objectFit: 'cover' };
+      newPlacedImages[frameIndex] = { src: imageUrl, objectFit: globalFit };
       setPlacedImages(newPlacedImages);
     }
   };
@@ -62,12 +69,22 @@ export default function EditorCanvas({ size, layout }: EditorCanvasProps) {
     <div 
         id="printable-area" 
         className="printable-area"
+        style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+        }}
     >
         <div
             className="bg-white shadow-lg mx-auto transition-all duration-300 ease-in-out"
             style={{
                 width: size.width,
                 height: size.height,
+                maxWidth: '100%',
+                maxHeight: '100%',
+                aspectRatio: `auto ${parseInt(size.width)} / ${parseInt(size.height)}`
             }}
         >
             <div

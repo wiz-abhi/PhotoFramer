@@ -37,13 +37,20 @@ const LAYOUTS: CanvasLayout[] = [
   { id: '3x3', name: '9 Images (Grid)', grid: [3, 3] },
 ];
 
+export type ObjectFit = 'cover' | 'contain';
+
 export default function EditorPage() {
   const [canvasSize, setCanvasSize] = useState<CanvasSize>(SIZES[0]);
   const [layout, setLayout] = useState<CanvasLayout>(LAYOUTS[0]);
-  
+  const [globalObjectFit, setGlobalObjectFit] = useState<ObjectFit>('cover');
+
   const handlePrint = () => {
     window.print();
   };
+
+  const toggleGlobalObjectFit = () => {
+    setGlobalObjectFit(prev => prev === 'cover' ? 'contain' : 'cover');
+  }
 
   return (
     <div className="flex h-screen bg-muted/40">
@@ -54,6 +61,8 @@ export default function EditorPage() {
         onSizeChange={setCanvasSize}
         selectedLayout={layout}
         onLayoutChange={setLayout}
+        onToggleGlobalFit={toggleGlobalObjectFit}
+        globalFit={globalObjectFit}
       />
       <main className="flex-1 flex flex-col overflow-hidden">
         <header className="flex h-14 items-center justify-between border-b bg-background px-4">
@@ -70,7 +79,7 @@ export default function EditorPage() {
           </Button>
         </header>
         <div className="flex-1 overflow-auto p-4 md:p-8 flex items-center justify-center">
-            <EditorCanvas size={canvasSize} layout={layout} />
+            <EditorCanvas size={canvasSize} layout={layout} globalFit={globalObjectFit} />
         </div>
       </main>
     </div>

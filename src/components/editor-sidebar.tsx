@@ -6,8 +6,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { CanvasSize, CanvasLayout } from '@/app/editor/page';
-import { LayoutGrid, Image as ImageIcon } from 'lucide-react';
+import type { CanvasSize, CanvasLayout, ObjectFit } from '@/app/editor/page';
+import { Image as ImageIcon, ArrowLeftRight } from 'lucide-react';
+import { Button } from './ui/button';
 
 interface EditorSidebarProps {
   sizes: CanvasSize[];
@@ -16,6 +17,8 @@ interface EditorSidebarProps {
   onSizeChange: (size: CanvasSize) => void;
   selectedLayout: CanvasLayout;
   onLayoutChange: (layout: CanvasLayout) => void;
+  onToggleGlobalFit: () => void;
+  globalFit: ObjectFit;
 }
 
 export default function EditorSidebar({
@@ -25,6 +28,8 @@ export default function EditorSidebar({
   onSizeChange,
   selectedLayout,
   onLayoutChange,
+  onToggleGlobalFit,
+  globalFit
 }: EditorSidebarProps) {
   const { images } = useImages();
 
@@ -76,6 +81,13 @@ export default function EditorSidebar({
             </SelectContent>
           </Select>
         </div>
+         <div>
+            <Label className="text-base">Image Fit</Label>
+            <Button onClick={onToggleGlobalFit} variant="outline" className="w-full mt-2">
+                <ArrowLeftRight className="mr-2 h-4 w-4" />
+                Toggle All to {globalFit === 'cover' ? 'Contain' : 'Cover'}
+            </Button>
+         </div>
       </div>
       <div className="flex-1 min-h-0">
       <Card className="h-full rounded-none border-t border-b-0 border-x-0">
