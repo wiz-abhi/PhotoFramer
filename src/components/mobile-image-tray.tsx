@@ -9,7 +9,11 @@ import { Button } from './ui/button';
 import { useState, useRef, ChangeEvent } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
-export default function MobileImageTray() {
+interface MobileImageTrayProps {
+    onPlaceImage: (imageUrl: string) => void;
+}
+
+export default function MobileImageTray({ onPlaceImage }: MobileImageTrayProps) {
   const { images, rotateImage, addImages } = useImages();
   const [rotatingIndex, setRotatingIndex] = useState<number | null>(null);
   const [isAddingImages, setIsAddingImages] = useState(false);
@@ -89,10 +93,20 @@ export default function MobileImageTray() {
               key={index}
               draggable
               onDragStart={(e) => handleDragStart(e, src)}
-              className="group aspect-square h-28 w-28 relative rounded-md overflow-hidden cursor-grab active:cursor-grabbing shrink-0"
+              onClick={() => onPlaceImage(src)}
+              className="group aspect-square h-28 w-28 relative rounded-md overflow-hidden cursor-pointer active:cursor-grabbing shrink-0"
             >
               <Image src={src} alt={`Uploaded image ${index + 1}`} layout="fill" objectFit="cover" className='rounded-md' />
-              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                 <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-white hover:bg-white/20 hover:text-white h-10 w-10"
+                    onClick={(e) => { e.stopPropagation(); onPlaceImage(src); }}
+                    title="Add to canvas"
+                    >
+                    <PlusCircle className="h-5 w-5" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"

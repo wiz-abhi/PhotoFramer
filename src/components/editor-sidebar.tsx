@@ -23,6 +23,7 @@ interface EditorSidebarProps {
   onLayoutChange: (layout: CanvasLayout) => void;
   onToggleGlobalFit: () => void;
   globalFit: ObjectFit;
+  onPlaceImage: (imageUrl: string) => void;
 }
 
 export default function EditorSidebar({
@@ -33,7 +34,8 @@ export default function EditorSidebar({
   selectedLayout,
   onLayoutChange,
   onToggleGlobalFit,
-  globalFit
+  globalFit,
+  onPlaceImage,
 }: EditorSidebarProps) {
   const { images, rotateImage, addImages } = useImages();
   const [rotatingIndex, setRotatingIndex] = useState<number | null>(null);
@@ -117,10 +119,20 @@ export default function EditorSidebar({
                       key={index}
                       draggable
                       onDragStart={(e) => handleDragStart(e, src)}
-                      className="group aspect-square relative rounded-md overflow-hidden cursor-grab active:cursor-grabbing transition-transform hover:scale-105"
+                      onClick={() => onPlaceImage(src)}
+                      className="group aspect-square relative rounded-md overflow-hidden cursor-pointer active:cursor-grabbing transition-transform hover:scale-105"
                     >
                       <Image src={src} alt={`Uploaded image ${index + 1}`} layout="fill" objectFit="cover" />
-                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                           <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-white hover:bg-white/20 hover:text-white h-10 w-10"
+                            onClick={(e) => { e.stopPropagation(); onPlaceImage(src); }}
+                            title="Add to canvas"
+                          >
+                            <PlusCircle className="h-5 w-5" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon"

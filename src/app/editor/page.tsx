@@ -62,6 +62,26 @@ export default function EditorPage() {
     setGlobalObjectFit(prev => prev === 'cover' ? 'contain' : 'cover');
   }
 
+  const handlePlaceImage = (imageUrl: string) => {
+    const nextEmptyIndex = placedImages.findIndex(img => img === null);
+    if (nextEmptyIndex !== -1) {
+      const newPlacedImages = [...placedImages];
+      newPlacedImages[nextEmptyIndex] = {
+        src: imageUrl,
+        objectFit: globalObjectFit,
+        position: { x: 50, y: 50 },
+        zoom: 1,
+      };
+      setPlacedImages(newPlacedImages);
+    } else {
+        toast({
+            variant: "default",
+            title: "Canvas Full",
+            description: "No empty frames to place the image.",
+        })
+    }
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     const printableArea = document.getElementById('printable-area');
@@ -134,6 +154,7 @@ export default function EditorPage() {
           onLayoutChange={setLayout}
           onToggleGlobalFit={toggleGlobalObjectFit}
           globalFit={globalObjectFit}
+          onPlaceImage={handlePlaceImage}
         />
       </div>
 
@@ -196,7 +217,7 @@ export default function EditorPage() {
         
         {/* Mobile Image Tray */}
         <div className='md:hidden'>
-          <MobileImageTray />
+          <MobileImageTray onPlaceImage={handlePlaceImage} />
         </div>
       </main>
     </div>
