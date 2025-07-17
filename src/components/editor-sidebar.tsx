@@ -7,11 +7,12 @@ import Image from 'next/image';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { CanvasSize, CanvasLayout, ObjectFit } from '@/app/editor/page';
-import { Image as ImageIcon, ArrowLeftRight, RotateCw, Loader2, PlusCircle } from 'lucide-react';
+import { Image as ImageIcon, ArrowLeftRight, RotateCw, Loader2, PlusCircle, ChevronsUpDown } from 'lucide-react';
 import { Button } from './ui/button';
 import { useState, useRef, ChangeEvent } from 'react';
 import { Separator } from './ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface EditorSidebarProps {
   sizes: CanvasSize[];
@@ -37,6 +38,7 @@ export default function EditorSidebar({
   const { images, rotateImage, addImages } = useImages();
   const [rotatingIndex, setRotatingIndex] = useState<number | null>(null);
   const [isAddingImages, setIsAddingImages] = useState(false);
+  const [isControlsOpen, setIsControlsOpen] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -147,56 +149,66 @@ export default function EditorSidebar({
         </div>
       </div>
        <Separator />
-      <div className="p-4 border-t">
-        <h2 className="text-xl font-semibold">Controls</h2>
-      </div>
-      <div className="p-4 pt-0 space-y-6">
-        <div>
-          <Label htmlFor="canvas-size" className='text-base'>Canvas Size</Label>
-          <Select
-            value={selectedSize.id}
-            onValueChange={(id) => {
-              const newSize = sizes.find(s => s.id === id);
-              if (newSize) onSizeChange(newSize);
-            }}
-          >
-            <SelectTrigger id="canvas-size" className="w-full mt-2">
-              <SelectValue placeholder="Select size" />
-            </SelectTrigger>
-            <SelectContent>
-              {sizes.map(size => (
-                <SelectItem key={size.id} value={size.id}>{size.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="layout-type" className='text-base'>Layout</Label>
-          <Select
-            value={selectedLayout.id}
-            onValueChange={(id) => {
-              const newLayout = layouts.find(l => l.id === id);
-              if (newLayout) onLayoutChange(newLayout);
-            }}
-          >
-            <SelectTrigger id="layout-type" className="w-full mt-2">
-              <SelectValue placeholder="Select layout" />
-            </SelectTrigger>
-            <SelectContent>
-              {layouts.map(layout => (
-                <SelectItem key={layout.id} value={layout.id}>{layout.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-         <div>
-            <Label className="text-base">Image Fit</Label>
-            <Button onClick={onToggleGlobalFit} variant="outline" className="w-full mt-2">
-                <ArrowLeftRight className="mr-2 h-4 w-4" />
-                Toggle All to {globalFit === 'cover' ? 'Contain' : 'Cover'}
-            </Button>
-         </div>
-      </div>
+      <Collapsible open={isControlsOpen} onOpenChange={setIsControlsOpen} className="border-t">
+        <CollapsibleTrigger asChild>
+            <div className="p-4 flex items-center justify-between cursor-pointer">
+              <h2 className="text-xl font-semibold">Controls</h2>
+              <Button variant="ghost" size="sm">
+                <ChevronsUpDown className="h-4 w-4" />
+                <span className="sr-only">Toggle Controls</span>
+              </Button>
+            </div>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+            <div className="p-4 pt-0 space-y-6">
+                <div>
+                <Label htmlFor="canvas-size" className='text-base'>Canvas Size</Label>
+                <Select
+                    value={selectedSize.id}
+                    onValueChange={(id) => {
+                    const newSize = sizes.find(s => s.id === id);
+                    if (newSize) onSizeChange(newSize);
+                    }}
+                >
+                    <SelectTrigger id="canvas-size" className="w-full mt-2">
+                    <SelectValue placeholder="Select size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    {sizes.map(size => (
+                        <SelectItem key={size.id} value={size.id}>{size.name}</SelectItem>
+                    ))}
+                    </SelectContent>
+                </Select>
+                </div>
+                <div>
+                <Label htmlFor="layout-type" className='text-base'>Layout</Label>
+                <Select
+                    value={selectedLayout.id}
+                    onValueChange={(id) => {
+                    const newLayout = layouts.find(l => l.id === id);
+                    if (newLayout) onLayoutChange(newLayout);
+                    }}
+                >
+                    <SelectTrigger id="layout-type" className="w-full mt-2">
+                    <SelectValue placeholder="Select layout" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    {layouts.map(layout => (
+                        <SelectItem key={layout.id} value={layout.id}>{layout.name}</SelectItem>
+                    ))}
+                    </SelectContent>
+                </Select>
+                </div>
+                <div>
+                    <Label className="text-base">Image Fit</Label>
+                    <Button onClick={onToggleGlobalFit} variant="outline" className="w-full mt-2">
+                        <ArrowLeftRight className="mr-2 h-4 w-4" />
+                        Toggle All to {globalFit === 'cover' ? 'Contain' : 'Cover'}
+                    </Button>
+                </div>
+            </div>
+        </CollapsibleContent>
+      </Collapsible>
     </aside>
   );
 }
