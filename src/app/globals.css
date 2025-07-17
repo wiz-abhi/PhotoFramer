@@ -88,11 +88,14 @@ body {
   }
 }
 
+/* Styles for printing the canvas */
 @media print {
   body, html {
     margin: 0;
     padding: 0;
     background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   body * {
     visibility: hidden;
@@ -115,8 +118,22 @@ body {
     border: none;
   }
 
+  /* Hide empty frames when printing */
+  .frame-container.is-empty {
+    visibility: hidden;
+  }
+
   @page {
     size: auto;
     margin: 0;
   }
+}
+
+/* Styles for saving the canvas as an image */
+.is-saving .frame-container.is-empty {
+    border-color: transparent;
+    background-color: transparent;
+}
+.is-saving .frame-container.is-empty .placeholder-content {
+    display: none;
 }

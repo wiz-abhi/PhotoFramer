@@ -66,12 +66,13 @@ export default function EditorPage() {
     setIsSaving(true);
     const printableArea = document.getElementById('printable-area');
     if (printableArea) {
+      printableArea.classList.add('is-saving');
       try {
         const canvas = await html2canvas(printableArea, {
-            scale: 3, // Higher scale for better quality, 3 is a good balance
+            scale: 3, // Higher scale for better quality
             useCORS: true, 
             logging: false,
-            backgroundColor: '#ffffff' // Ensure background is white for saved image
+            backgroundColor: '#ffffff'
         });
         const dataUrl = canvas.toDataURL('image/png');
         const link = document.createElement('a');
@@ -91,6 +92,9 @@ export default function EditorPage() {
             title: "Save Failed",
             description: "Could not save your frame as an image.",
         });
+      } finally {
+        printableArea.classList.remove('is-saving');
+        setIsSaving(false);
       }
     } else {
         toast({
@@ -98,8 +102,8 @@ export default function EditorPage() {
             title: "Save Error",
             description: "Could not find the printable area.",
         });
+        setIsSaving(false);
     }
-    setIsSaving(false);
   };
   
 

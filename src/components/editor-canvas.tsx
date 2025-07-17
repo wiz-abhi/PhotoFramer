@@ -95,35 +95,35 @@ export default function EditorCanvas({ size, layout, globalFit, placedImages, se
     });
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      // Add a guard clause to ensure dragState is not null
-      if (!dragState) {
-        return;
-      }
-      const dx = moveEvent.clientX - dragState.startX;
-      const dy = moveEvent.clientY - dragState.startY;
-  
-      const frame = (e.target as HTMLElement).closest('.image-frame');
-      if (!frame) return;
-  
-      const deltaX = (dx / frame.clientWidth) * 100;
-      const deltaY = (dy / frame.clientHeight) * 100;
-      
-      let newX = dragState.initialX - deltaX;
-      let newY = dragState.initialY - deltaY;
-  
-      newX = Math.max(0, Math.min(100, newX));
-      newY = Math.max(0, Math.min(100, newY));
-      
-      setPlacedImages(current => {
-          const newImages = [...current];
-          // Also check for dragState inside the setter to get the latest value
-          if (dragState) {
-            const image = newImages[dragState.index];
+      setDragState(currentDragState => {
+        if (!currentDragState) {
+          return null;
+        }
+        const dx = moveEvent.clientX - currentDragState.startX;
+        const dy = moveEvent.clientY - currentDragState.startY;
+    
+        const frame = (e.target as HTMLElement).closest('.image-frame');
+        if (!frame) return currentDragState;
+    
+        const deltaX = (dx / frame.clientWidth) * 100;
+        const deltaY = (dy / frame.clientHeight) * 100;
+        
+        let newX = currentDragState.initialX - deltaX;
+        let newY = currentDragState.initialY - deltaY;
+    
+        newX = Math.max(0, Math.min(100, newX));
+        newY = Math.max(0, Math.min(100, newY));
+        
+        setPlacedImages(current => {
+            const newImages = [...current];
+            const image = newImages[currentDragState.index];
             if (image) {
                 image.position = { x: newX, y: newY };
             }
-          }
-          return newImages;
+            return newImages;
+        });
+
+        return currentDragState;
       });
     }
 
@@ -190,8 +190,8 @@ export default function EditorCanvas({ size, layout, globalFit, placedImages, se
                 <div
                     key={index}
                     className={cn(
-                    'relative group border-2 border-dashed rounded-md flex items-center justify-center transition-colors overflow-hidden',
-                    image ? 'border-primary/50 bg-primary/10' : 'bg-muted/50 border-muted-foreground/50'
+                      'relative group border-2 border-dashed rounded-md flex items-center justify-center transition-colors overflow-hidden frame-container',
+                      image ? 'border-primary/50 bg-primary/10' : 'bg-muted/50 border-muted-foreground/50 is-empty'
                     )}
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, index)}
@@ -235,7 +235,7 @@ export default function EditorCanvas({ size, layout, globalFit, placedImages, se
                         </div>
                     </>
                     ) : (
-                    <div className="text-center text-muted-foreground">
+                    <div className="text-center text-muted-foreground placeholder-content">
                         <ImageIcon className="mx-auto h-8 w-8 mb-1" />
                         <p className="text-xs">Drop image here</p>
                     </div>
