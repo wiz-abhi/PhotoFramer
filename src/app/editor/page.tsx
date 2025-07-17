@@ -4,10 +4,13 @@ import { useState, useEffect } from 'react';
 import EditorSidebar from '@/components/editor-sidebar';
 import EditorCanvas, { PlacedImage } from '@/components/editor-canvas';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Printer, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Printer, Save, Loader2, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import html2canvas from 'html2canvas';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import MobileImageTray from '@/components/mobile-image-tray';
+import MobileControls from '@/components/mobile-controls';
 
 export type CanvasSize = {
   id: string;
@@ -48,6 +51,7 @@ export default function EditorPage() {
   const [placedImages, setPlacedImages] = useState<(PlacedImage | null)[]>([]);
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const handlePrint = () => {
     window.print();
@@ -113,17 +117,21 @@ export default function EditorPage() {
 
 
   return (
-    <div className="flex h-screen bg-muted/40">
-      <EditorSidebar
-        sizes={SIZES}
-        layouts={LAYOUTS}
-        selectedSize={canvasSize}
-        onSizeChange={setCanvasSize}
-        selectedLayout={layout}
-        onLayoutChange={setLayout}
-        onToggleGlobalFit={toggleGlobalObjectFit}
-        globalFit={globalObjectFit}
-      />
+    <div className="flex flex-col md:flex-row h-screen bg-muted/40">
+      {/* Desktop Sidebar */}
+      <div className='hidden md:block'>
+        <EditorSidebar
+          sizes={SIZES}
+          layouts={LAYOUTS}
+          selectedSize={canvasSize}
+          onSizeChange={setCanvasSize}
+          selectedLayout={layout}
+          onLayoutChange={setLayout}
+          onToggleGlobalFit={toggleGlobalObjectFit}
+          globalFit={globalObjectFit}
+        />
+      </div>
+
       <main className="flex-1 flex flex-col overflow-hidden">
         <header className="flex h-14 items-center justify-between border-b bg-background px-4 gap-2">
             <Button variant="outline" size="icon" asChild>
@@ -134,17 +142,44 @@ export default function EditorPage() {
             </Button>
           <h1 className="text-xl font-semibold">Editor</h1>
           <div className='flex items-center gap-2'>
-            <Button onClick={handleSave} disabled={isSaving}>
+            <Button onClick={handleSave} disabled={isSaving} size="sm">
                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                {isSaving ? "Saving..." : "Save"}
+                <span className='hidden md:inline'>{isSaving ? "Saving..." : "Save"}</span>
             </Button>
-            <Button onClick={handlePrint}>
+            <Button onClick={handlePrint} size="sm">
                 <Printer className="mr-2 h-4 w-4" />
-                Print
+                <span className='hidden md:inline'>Print</span>
             </Button>
+            {/* Mobile Controls Sheet */}
+            <div className='md:hidden'>
+                <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                    <SheetTrigger asChild>
+                        <Button variant="outline" size="icon">
+                            <Settings className="h-4 w-4" />
+                            <span className="sr-only">Open Controls</span>
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent>
+                        <SheetHeader>
+                            <SheetTitle>Controls</SheetTitle>
+                        </SheetHeader>
+                        <MobileControls
+                          sizes={SIZES}
+                          layouts={LAYOUTS}
+                          selectedSize={canvasSize}
+                          onSizeChange={setCanvasSize}
+                          selectedLayout={layout}
+                          onLayoutChange={setLayout}
+                          onToggleGlobalFit={toggleGlobalObjectFit}
+                          globalFit={globalObjectFit}
+                          closeSheet={() => setIsSheetOpen(false)}
+                        />
+                    </SheetContent>
+                </Sheet>
+            </div>
           </div>
         </header>
-        <div className="flex-1 overflow-auto p-4 md:p-8 flex items-center justify-center">
+        <div className="flex-1 overflow-auto p-4 flex items-center justify-center">
             <EditorCanvas 
                 size={canvasSize} 
                 layout={layout} 
@@ -152,6 +187,11 @@ export default function EditorPage() {
                 placedImages={placedImages}
                 setPlacedImages={setPlacedImages}
              />
+        </div>
+        
+        {/* Mobile Image Tray */}
+        <div className='md:hidden'>
+          <MobileImageTray />
         </div>
       </main>
     </div>

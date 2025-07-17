@@ -86,7 +86,7 @@ export default function EditorSidebar({
 
 
   return (
-    <aside className="w-80 border-r bg-background flex flex-col">
+    <aside className="w-80 border-r bg-background flex flex-col h-full">
        <input
             type="file"
             multiple
