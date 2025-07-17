@@ -102,7 +102,7 @@ export default function Home() {
         </CardContent>
       </Card>
       <div className="absolute bottom-4 right-4 text-sm text-muted-foreground">
-        created by abhishek
+        created by Abhishek
       </div>
     </main>
   );
