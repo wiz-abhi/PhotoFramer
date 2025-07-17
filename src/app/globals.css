@@ -118,9 +118,16 @@ body {
     border: none;
   }
 
-  /* Hide empty frames when printing */
+  /* Hide empty frames and their borders when printing */
   .frame-container.is-empty {
-    visibility: hidden;
+    display: none;
+  }
+  .frame-container {
+    border-color: transparent;
+    background-color: transparent;
+  }
+  .frame-container.is-empty .placeholder-content {
+    display: none;
   }
 }
 
