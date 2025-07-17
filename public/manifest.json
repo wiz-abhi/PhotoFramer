@@ -1,0 +1,9 @@
+{
+  "name": "Photo Frame Factory",
+  "short_name": "PhotoFrame",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E6F7FF",
+  "theme_color": "#B0E2FF",
+  "description": "Create and print custom photo layouts."
+}
