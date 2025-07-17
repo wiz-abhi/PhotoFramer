@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ChangeEvent, useRef, useState } from 'react';
@@ -100,6 +101,9 @@ export default function Home() {
           </p>
         </CardContent>
       </Card>
+      <div className="absolute bottom-4 right-4 text-sm text-muted-foreground">
+        created by abhishek
+      </div>
     </main>
   );
 }
