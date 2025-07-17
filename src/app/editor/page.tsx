@@ -62,7 +62,7 @@ export default function EditorPage() {
     setGlobalObjectFit(prev => prev === 'cover' ? 'contain' : 'cover');
   }
 
-  const handlePlaceImage = (imageUrl: string) => {
+  const handlePlaceImageColumnWise = (imageUrl: string) => {
     const [rows, cols] = layout.grid;
     let nextEmptyIndex = -1;
 
@@ -70,7 +70,7 @@ export default function EditorPage() {
     for (let c = 0; c < cols; c++) {
       for (let r = 0; r < rows; r++) {
         const index = r * cols + c;
-        if (placedImages[index] === null) {
+        if (!placedImages[index]) {
           nextEmptyIndex = index;
           break; // Exit inner loop
         }
@@ -97,6 +97,28 @@ export default function EditorPage() {
         })
     }
   };
+
+  const handlePlaceImageRowWise = (imageUrl: string) => {
+    const nextEmptyIndex = placedImages.findIndex(img => img === null);
+    
+    if (nextEmptyIndex !== -1) {
+      const newPlacedImages = [...placedImages];
+      newPlacedImages[nextEmptyIndex] = {
+        src: imageUrl,
+        objectFit: 'cover', // Always fill the space on mobile tap
+        position: { x: 50, y: 50 },
+        zoom: 1,
+      };
+      setPlacedImages(newPlacedImages);
+    } else {
+        toast({
+            variant: "default",
+            title: "Canvas Full",
+            description: "No empty frames to place the image.",
+        })
+    }
+  };
+
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -170,7 +192,7 @@ export default function EditorPage() {
           onLayoutChange={setLayout}
           onToggleGlobalFit={toggleGlobalObjectFit}
           globalFit={globalObjectFit}
-          onPlaceImage={handlePlaceImage}
+          onPlaceImage={handlePlaceImageColumnWise}
         />
       </div>
 
@@ -233,7 +255,7 @@ export default function EditorPage() {
         
         {/* Mobile Image Tray */}
         <div className='md:hidden'>
-          <MobileImageTray onPlaceImage={handlePlaceImage} />
+          <MobileImageTray onPlaceImage={handlePlaceImageRowWise} />
         </div>
       </main>
     </div>
