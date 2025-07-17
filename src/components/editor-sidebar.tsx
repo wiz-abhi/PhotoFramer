@@ -50,7 +50,53 @@ export default function EditorSidebar({
 
   return (
     <aside className="w-80 border-r bg-background flex flex-col">
-      <div className="p-4 border-b">
+      <div className="flex-1 min-h-0">
+      <Card className="h-full rounded-none border-t-0 border-b-0 border-x-0">
+        <CardHeader className="border-b">
+          <CardTitle>Your Images</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0 h-[calc(100%-4rem)]">
+          <ScrollArea className="h-full p-4">
+            {images.length > 0 ? (
+                <div className="grid grid-cols-2 gap-4">
+                {images.map((src, index) => (
+                    <div
+                      key={index}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, src)}
+                      className="group aspect-square relative rounded-md overflow-hidden cursor-grab active:cursor-grabbing transition-transform hover:scale-105"
+                    >
+                      <Image src={src} alt={`Uploaded image ${index + 1}`} layout="fill" objectFit="cover" />
+                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-white hover:bg-white/20 hover:text-white h-10 w-10"
+                            onClick={(e) => handleRotate(e, index)}
+                            title="Rotate 90 degrees"
+                            disabled={rotatingIndex !== null}
+                          >
+                              {rotatingIndex === index ? (
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                              ) : (
+                                <RotateCw className="h-5 w-5" />
+                              )}
+                          </Button>
+                      </div>
+                    </div>
+                ))}
+                </div>
+            ) : (
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                    <ImageIcon className="w-16 h-16 mb-4" />
+                    <p className="text-center">Upload images on the home page to see them here.</p>
+                </div>
+            )}
+          </ScrollArea>
+        </CardContent>
+      </Card>
+      </div>
+       <div className="p-4 border-t">
         <h2 className="text-xl font-semibold">Controls</h2>
       </div>
       <div className="p-4 space-y-6">
@@ -99,52 +145,6 @@ export default function EditorSidebar({
                 Toggle All to {globalFit === 'cover' ? 'Contain' : 'Cover'}
             </Button>
          </div>
-      </div>
-      <div className="flex-1 min-h-0">
-      <Card className="h-full rounded-none border-t border-b-0 border-x-0">
-        <CardHeader className="border-b">
-          <CardTitle>Your Images</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0 h-[calc(100%-4rem)]">
-          <ScrollArea className="h-full p-4">
-            {images.length > 0 ? (
-                <div className="grid grid-cols-2 gap-4">
-                {images.map((src, index) => (
-                    <div
-                      key={index}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, src)}
-                      className="group aspect-square relative rounded-md overflow-hidden cursor-grab active:cursor-grabbing transition-transform hover:scale-105"
-                    >
-                      <Image src={src} alt={`Uploaded image ${index + 1}`} layout="fill" objectFit="cover" />
-                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-white hover:bg-white/20 hover:text-white h-10 w-10"
-                            onClick={(e) => handleRotate(e, index)}
-                            title="Rotate 90 degrees"
-                            disabled={rotatingIndex !== null}
-                          >
-                              {rotatingIndex === index ? (
-                                <Loader2 className="h-5 w-5 animate-spin" />
-                              ) : (
-                                <RotateCw className="h-5 w-5" />
-                              )}
-                          </Button>
-                      </div>
-                    </div>
-                ))}
-                </div>
-            ) : (
-                <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                    <ImageIcon className="w-16 h-16 mb-4" />
-                    <p className="text-center">Upload images on the home page to see them here.</p>
-                </div>
-            )}
-          </ScrollArea>
-        </CardContent>
-      </Card>
       </div>
     </aside>
   );

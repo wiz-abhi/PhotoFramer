@@ -1,12 +1,13 @@
 
 'use client';
 
-import { useState, DragEvent, useEffect, useRef } from 'react';
+import { useState, DragEvent, useEffect } from 'react';
 import type { CanvasSize, CanvasLayout, ObjectFit } from '@/app/editor/page';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { ImageIcon, Trash2, ArrowLeftRight } from 'lucide-react';
 import { Button } from './ui/button';
+import { ZoomDialog } from './zoom-dialog';
 
 interface EditorCanvasProps {
   size: CanvasSize;
@@ -14,10 +15,11 @@ interface EditorCanvasProps {
   globalFit: ObjectFit;
 }
 
-type PlacedImage = {
+export type PlacedImage = {
   src: string;
   objectFit: ObjectFit;
   position: { x: number; y: number }; // 0-100 for object-position
+  zoom: number; // 1 = 100%
 };
 
 type DragState = {
@@ -28,11 +30,17 @@ type DragState = {
   initialY: number;
 };
 
+type EditingState = {
+  index: number;
+  image: PlacedImage;
+};
+
 export default function EditorCanvas({ size, layout, globalFit }: EditorCanvasProps) {
   const [rows, cols] = layout.grid;
   const totalFrames = rows * cols;
   const [placedImages, setPlacedImages] = useState<(PlacedImage | null)[]>(Array(totalFrames).fill(null));
   const [dragState, setDragState] = useState<DragState | null>(null);
+  const [editingImage, setEditingImage] = useState<EditingState | null>(null);
 
   useEffect(() => {
     // Reset canvas when layout or size changes
@@ -41,7 +49,7 @@ export default function EditorCanvas({ size, layout, globalFit }: EditorCanvasPr
 
   useEffect(() => {
     setPlacedImages(currentImages =>
-        currentImages.map(img => img ? { ...img, objectFit: globalFit } : null)
+        currentImages.map(img => img ? { ...img, objectFit: globalFit, zoom: 1, position: { x: 50, y: 50 } } : null)
     );
   }, [globalFit]);
   
@@ -57,7 +65,8 @@ export default function EditorCanvas({ size, layout, globalFit }: EditorCanvasPr
       newPlacedImages[frameIndex] = { 
         src: imageUrl, 
         objectFit: globalFit,
-        position: { x: 50, y: 50 } // Center by default
+        position: { x: 50, y: 50 }, // Center by default
+        zoom: 1,
       };
       setPlacedImages(newPlacedImages);
     }
@@ -74,6 +83,8 @@ export default function EditorCanvas({ size, layout, globalFit }: EditorCanvasPr
     const image = newPlacedImages[frameIndex];
     if (image) {
       image.objectFit = image.objectFit === 'cover' ? 'contain' : 'cover';
+      image.zoom = 1;
+      image.position = {x: 50, y: 50};
       setPlacedImages(newPlacedImages);
     }
   };
@@ -112,8 +123,8 @@ export default function EditorCanvas({ size, layout, globalFit }: EditorCanvasPr
     const deltaX = (dx / frame.clientWidth) * 100;
     const deltaY = (dy / frame.clientHeight) * 100;
     
-    let newX = dragState.initialX + deltaX;
-    let newY = dragState.initialY + deltaY;
+    let newX = dragState.initialX - deltaX;
+    let newY = dragState.initialY - deltaY;
 
     // Clamp values between 0 and 100
     newX = Math.max(0, Math.min(100, newX));
@@ -133,7 +144,34 @@ export default function EditorCanvas({ size, layout, globalFit }: EditorCanvasPr
     setDragState(null);
   }
 
+  const handleDoubleClick = (index: number) => {
+    const image = placedImages[index];
+    if (image) {
+      setEditingImage({ index, image });
+    }
+  };
+
+  const handleZoomChange = (newZoom: number, applyToAll: boolean) => {
+    if (editingImage) {
+      if (applyToAll) {
+        setPlacedImages(currentImages => 
+          currentImages.map(img => img ? { ...img, zoom: newZoom } : null)
+        );
+      } else {
+        setPlacedImages(currentImages => {
+          const newImages = [...currentImages];
+          const image = newImages[editingImage.index];
+          if(image) {
+            image.zoom = newZoom;
+          }
+          return newImages;
+        });
+      }
+    }
+  };
+
   return (
+    <>
     <div 
         id="printable-area" 
         className="printable-area"
@@ -171,6 +209,7 @@ export default function EditorCanvas({ size, layout, globalFit }: EditorCanvasPr
                     )}
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, index)}
+                    onDoubleClick={() => handleDoubleClick(index)}
                 >
                     {placedImages[index] ? (
                     <>
@@ -179,7 +218,11 @@ export default function EditorCanvas({ size, layout, globalFit }: EditorCanvasPr
                             alt={`Placed image ${index}`}
                             layout="fill"
                             objectFit={placedImages[index]!.objectFit}
-                            style={{ objectPosition: `${placedImages[index]!.position.x}% ${placedImages[index]!.position.y}%`}}
+                            style={{ 
+                                objectPosition: `${placedImages[index]!.position.x}% ${placedImages[index]!.position.y}%`,
+                                transform: `scale(${placedImages[index]!.zoom})`,
+                                transition: 'transform 0.2s ease-out',
+                            }}
                             className={cn(
                                 'rounded-sm',
                                 placedImages[index]!.objectFit === 'cover' && 'cursor-grab active:cursor-grabbing'
@@ -222,5 +265,14 @@ export default function EditorCanvas({ size, layout, globalFit }: EditorCanvasPr
             </div>
         </div>
     </div>
+    {editingImage && (
+        <ZoomDialog
+            isOpen={!!editingImage}
+            onClose={() => setEditingImage(null)}
+            image={editingImage.image}
+            onZoomChange={handleZoomChange}
+        />
+    )}
+    </>
   );
 }
