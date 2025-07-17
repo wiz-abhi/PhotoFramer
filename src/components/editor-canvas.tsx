@@ -1,10 +1,11 @@
+
 'use client';
 
 import { useState, DragEvent, useEffect } from 'react';
 import type { CanvasSize, CanvasLayout } from '@/app/editor/page';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { ImageIcon, Trash2 } from 'lucide-react';
+import { ImageIcon, Trash2, SwitchHorizontal } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface EditorCanvasProps {
@@ -12,10 +13,15 @@ interface EditorCanvasProps {
   layout: CanvasLayout;
 }
 
+type PlacedImage = {
+  src: string;
+  objectFit: 'cover' | 'contain';
+};
+
 export default function EditorCanvas({ size, layout }: EditorCanvasProps) {
   const [rows, cols] = layout.grid;
   const totalFrames = rows * cols;
-  const [placedImages, setPlacedImages] = useState<(string | null)[]>(Array(totalFrames).fill(null));
+  const [placedImages, setPlacedImages] = useState<(PlacedImage | null)[]>(Array(totalFrames).fill(null));
 
   useEffect(() => {
     // Reset canvas when layout or size changes
@@ -31,7 +37,7 @@ export default function EditorCanvas({ size, layout }: EditorCanvasProps) {
     const imageUrl = e.dataTransfer.getData('text/plain');
     if (imageUrl) {
       const newPlacedImages = [...placedImages];
-      newPlacedImages[frameIndex] = imageUrl;
+      newPlacedImages[frameIndex] = { src: imageUrl, objectFit: 'cover' };
       setPlacedImages(newPlacedImages);
     }
   };
@@ -41,6 +47,16 @@ export default function EditorCanvas({ size, layout }: EditorCanvasProps) {
     newPlacedImages[frameIndex] = null;
     setPlacedImages(newPlacedImages);
   };
+  
+  const toggleObjectFit = (frameIndex: number) => {
+    const newPlacedImages = [...placedImages];
+    const image = newPlacedImages[frameIndex];
+    if (image) {
+      image.objectFit = image.objectFit === 'cover' ? 'contain' : 'cover';
+      setPlacedImages(newPlacedImages);
+    }
+  };
+
 
   return (
     <div 
@@ -65,7 +81,7 @@ export default function EditorCanvas({ size, layout }: EditorCanvasProps) {
                 <div
                     key={index}
                     className={cn(
-                    'relative border-2 border-dashed rounded-md flex items-center justify-center transition-colors',
+                    'relative group border-2 border-dashed rounded-md flex items-center justify-center transition-colors',
                     placedImages[index] ? 'border-primary/50 bg-primary/10' : 'bg-muted/50 border-muted-foreground/50'
                     )}
                     onDragOver={handleDragOver}
@@ -74,20 +90,31 @@ export default function EditorCanvas({ size, layout }: EditorCanvasProps) {
                     {placedImages[index] ? (
                     <>
                         <Image
-                            src={placedImages[index]!}
+                            src={placedImages[index]!.src}
                             alt={`Placed image ${index}`}
                             layout="fill"
-                            objectFit="cover"
+                            objectFit={placedImages[index]!.objectFit}
                             className="rounded-sm"
                         />
-                        <Button 
-                            variant="destructive" 
-                            size="icon" 
-                            className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => removeImage(index)}
-                            >
-                                <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="absolute top-2 right-2 flex flex-col space-y-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button 
+                                variant="destructive" 
+                                size="icon" 
+                                className="h-7 w-7"
+                                onClick={() => removeImage(index)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                            </Button>
+                             <Button 
+                                variant="secondary" 
+                                size="icon" 
+                                className="h-7 w-7"
+                                onClick={() => toggleObjectFit(index)}
+                                title="Toggle image fit"
+                                >
+                                    <SwitchHorizontal className="h-4 w-4" />
+                            </Button>
+                        </div>
                     </>
                     ) : (
                     <div className="text-center text-muted-foreground">
