@@ -95,6 +95,10 @@ export default function EditorCanvas({ size, layout, globalFit, placedImages, se
     });
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
+      // Add a guard clause to ensure dragState is not null
+      if (!dragState) {
+        return;
+      }
       const dx = moveEvent.clientX - dragState.startX;
       const dy = moveEvent.clientY - dragState.startY;
   
@@ -112,9 +116,12 @@ export default function EditorCanvas({ size, layout, globalFit, placedImages, se
       
       setPlacedImages(current => {
           const newImages = [...current];
-          const image = newImages[dragState.index];
-          if (image) {
-              image.position = { x: newX, y: newY };
+          // Also check for dragState inside the setter to get the latest value
+          if (dragState) {
+            const image = newImages[dragState.index];
+            if (image) {
+                image.position = { x: newX, y: newY };
+            }
           }
           return newImages;
       });
@@ -249,4 +256,3 @@ export default function EditorCanvas({ size, layout, globalFit, placedImages, se
     </>
   );
 }
-
