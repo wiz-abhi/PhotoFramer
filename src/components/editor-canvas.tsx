@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, DragEvent, useEffect } from 'react';
+import { useState, DragEvent, useEffect, useRef } from 'react';
 import type { CanvasSize, CanvasLayout, ObjectFit } from '@/app/editor/page';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
@@ -17,12 +17,22 @@ interface EditorCanvasProps {
 type PlacedImage = {
   src: string;
   objectFit: ObjectFit;
+  position: { x: number; y: number }; // 0-100 for object-position
+};
+
+type DragState = {
+  index: number;
+  startX: number;
+  startY: number;
+  initialX: number;
+  initialY: number;
 };
 
 export default function EditorCanvas({ size, layout, globalFit }: EditorCanvasProps) {
   const [rows, cols] = layout.grid;
   const totalFrames = rows * cols;
   const [placedImages, setPlacedImages] = useState<(PlacedImage | null)[]>(Array(totalFrames).fill(null));
+  const [dragState, setDragState] = useState<DragState | null>(null);
 
   useEffect(() => {
     // Reset canvas when layout or size changes
@@ -30,7 +40,7 @@ export default function EditorCanvas({ size, layout, globalFit }: EditorCanvasPr
   }, [layout, size]);
 
   useEffect(() => {
-    setPlacedImages(currentImages => 
+    setPlacedImages(currentImages =>
         currentImages.map(img => img ? { ...img, objectFit: globalFit } : null)
     );
   }, [globalFit]);
@@ -44,7 +54,11 @@ export default function EditorCanvas({ size, layout, globalFit }: EditorCanvasPr
     const imageUrl = e.dataTransfer.getData('text/plain');
     if (imageUrl) {
       const newPlacedImages = [...placedImages];
-      newPlacedImages[frameIndex] = { src: imageUrl, objectFit: globalFit };
+      newPlacedImages[frameIndex] = { 
+        src: imageUrl, 
+        objectFit: globalFit,
+        position: { x: 50, y: 50 } // Center by default
+      };
       setPlacedImages(newPlacedImages);
     }
   };
@@ -64,6 +78,60 @@ export default function EditorCanvas({ size, layout, globalFit }: EditorCanvasPr
     }
   };
 
+  const onImageDragStart = (e: DragEvent<HTMLImageElement>, index: number) => {
+    const imageState = placedImages[index];
+    if (!imageState || imageState.objectFit === 'contain') {
+      e.preventDefault();
+      return;
+    }
+    // Set a transparent drag image
+    const img = document.createElement('img');
+    img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+    e.dataTransfer.setDragImage(img, 0, 0);
+    e.dataTransfer.effectAllowed = 'move';
+
+    setDragState({
+        index,
+        startX: e.clientX,
+        startY: e.clientY,
+        initialX: imageState.position.x,
+        initialY: imageState.position.y
+    });
+  }
+
+  const onImageDrag = (e: DragEvent<HTMLImageElement>) => {
+    if (!dragState || e.clientX === 0 || e.clientY === 0) return; // Ignore final drag event with 0,0 coordinates
+
+    const frame = e.currentTarget.parentElement;
+    if (!frame) return;
+
+    const dx = e.clientX - dragState.startX;
+    const dy = e.clientY - dragState.startY;
+
+    // Normalize by frame dimensions for consistent speed
+    const deltaX = (dx / frame.clientWidth) * 100;
+    const deltaY = (dy / frame.clientHeight) * 100;
+    
+    let newX = dragState.initialX + deltaX;
+    let newY = dragState.initialY + deltaY;
+
+    // Clamp values between 0 and 100
+    newX = Math.max(0, Math.min(100, newX));
+    newY = Math.max(0, Math.min(100, newY));
+    
+    setPlacedImages(current => {
+        const newImages = [...current];
+        const image = newImages[dragState.index];
+        if (image) {
+            image.position = { x: newX, y: newY };
+        }
+        return newImages;
+    });
+  };
+
+  const onImageDragEnd = () => {
+    setDragState(null);
+  }
 
   return (
     <div 
@@ -98,7 +166,7 @@ export default function EditorCanvas({ size, layout, globalFit }: EditorCanvasPr
                 <div
                     key={index}
                     className={cn(
-                    'relative group border-2 border-dashed rounded-md flex items-center justify-center transition-colors',
+                    'relative group border-2 border-dashed rounded-md flex items-center justify-center transition-colors overflow-hidden',
                     placedImages[index] ? 'border-primary/50 bg-primary/10' : 'bg-muted/50 border-muted-foreground/50'
                     )}
                     onDragOver={handleDragOver}
@@ -111,9 +179,19 @@ export default function EditorCanvas({ size, layout, globalFit }: EditorCanvasPr
                             alt={`Placed image ${index}`}
                             layout="fill"
                             objectFit={placedImages[index]!.objectFit}
-                            className="rounded-sm"
+                            style={{ objectPosition: `${placedImages[index]!.position.x}% ${placedImages[index]!.position.y}%`}}
+                            className={cn(
+                                'rounded-sm',
+                                placedImages[index]!.objectFit === 'cover' && 'cursor-grab active:cursor-grabbing'
+                            )}
+                            draggable={placedImages[index]!.objectFit === 'cover'}
+                            onDragStart={(e) => onImageDragStart(e, index)}
+                            onDrag={onImageDrag}
+                            onDragEnd={onImageDragEnd}
+                            // Prevent native drag ghost for panning
+                            onDragEnter={(e) => e.preventDefault()}
                         />
-                        <div className="absolute top-2 right-2 flex flex-col space-y-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute top-2 right-2 flex flex-col space-y-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                             <Button 
                                 variant="destructive" 
                                 size="icon" 
