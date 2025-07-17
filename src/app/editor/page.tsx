@@ -12,6 +12,7 @@ import html2canvas from 'html2canvas';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import MobileImageTray from '@/components/mobile-image-tray';
 import MobileControls from '@/components/mobile-controls';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export type CanvasSize = {
   id: string;
@@ -53,9 +54,12 @@ export default function EditorPage() {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const handlePrint = () => {
+    document.body.classList.add('printing');
     window.print();
+    document.body.classList.remove('printing');
   };
 
   const toggleGlobalObjectFit = () => {
@@ -180,7 +184,7 @@ export default function EditorPage() {
 
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-muted/40">
+    <div id="editor-page-container" className="flex flex-col md:flex-row h-screen bg-muted/40">
       {/* Desktop Sidebar */}
       <div className='hidden md:block'>
         <EditorSidebar

@@ -132,6 +132,10 @@ body {
   .printable-area .frame-container.is-empty .placeholder-content {
     display: none;
   }
+
+  .printing #editor-page-container {
+      display: block;
+  }
 }
 
 /* Styles for saving the canvas as an image */
