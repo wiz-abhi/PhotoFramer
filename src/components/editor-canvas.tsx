@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, DragEvent, useEffect } from 'react';
+import { useState, DragEvent, Dispatch, SetStateAction } from 'react';
 import type { CanvasSize, CanvasLayout, ObjectFit } from '@/app/editor/page';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
@@ -9,18 +9,20 @@ import { ImageIcon, Trash2, ArrowLeftRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { ZoomDialog } from './zoom-dialog';
 
-interface EditorCanvasProps {
-  size: CanvasSize;
-  layout: CanvasLayout;
-  globalFit: ObjectFit;
-}
-
 export type PlacedImage = {
   src: string;
   objectFit: ObjectFit;
   position: { x: number; y: number }; // 0-100 for object-position
   zoom: number; // 1 = 100%
 };
+
+interface EditorCanvasProps {
+  size: CanvasSize;
+  layout: CanvasLayout;
+  globalFit: ObjectFit;
+  placedImages: (PlacedImage | null)[];
+  setPlacedImages: Dispatch<SetStateAction<(PlacedImage | null)[]>>;
+}
 
 type DragState = {
   index: number;
@@ -35,23 +37,12 @@ type EditingState = {
   image: PlacedImage;
 };
 
-export default function EditorCanvas({ size, layout, globalFit }: EditorCanvasProps) {
+export default function EditorCanvas({ size, layout, globalFit, placedImages, setPlacedImages }: EditorCanvasProps) {
   const [rows, cols] = layout.grid;
   const totalFrames = rows * cols;
-  const [placedImages, setPlacedImages] = useState<(PlacedImage | null)[]>(Array(totalFrames).fill(null));
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [editingImage, setEditingImage] = useState<EditingState | null>(null);
 
-  useEffect(() => {
-    // Reset canvas when layout or size changes
-    setPlacedImages(Array(layout.grid[0] * layout.grid[1]).fill(null));
-  }, [layout, size]);
-
-  useEffect(() => {
-    setPlacedImages(currentImages =>
-        currentImages.map(img => img ? { ...img, objectFit: globalFit, zoom: 1, position: { x: 50, y: 50 } } : null)
-    );
-  }, [globalFit]);
   
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
