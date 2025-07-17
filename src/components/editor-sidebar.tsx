@@ -7,8 +7,9 @@ import Image from 'next/image';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { CanvasSize, CanvasLayout, ObjectFit } from '@/app/editor/page';
-import { Image as ImageIcon, ArrowLeftRight, RotateCw } from 'lucide-react';
+import { Image as ImageIcon, ArrowLeftRight, RotateCw, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
+import { useState } from 'react';
 
 interface EditorSidebarProps {
   sizes: CanvasSize[];
@@ -32,15 +33,19 @@ export default function EditorSidebar({
   globalFit
 }: EditorSidebarProps) {
   const { images, rotateImage } = useImages();
+  const [rotatingIndex, setRotatingIndex] = useState<number | null>(null);
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, imageUrl: string) => {
     e.dataTransfer.setData('text/plain', imageUrl);
   };
 
-  const handleRotate = (e: React.MouseEvent, index: number) => {
+  const handleRotate = async (e: React.MouseEvent, index: number) => {
     e.preventDefault();
     e.stopPropagation();
-    rotateImage(index);
+    if (rotatingIndex !== null) return;
+    setRotatingIndex(index);
+    await rotateImage(index);
+    setRotatingIndex(null);
   }
 
   return (
@@ -119,8 +124,13 @@ export default function EditorSidebar({
                             className="text-white hover:bg-white/20 hover:text-white h-10 w-10"
                             onClick={(e) => handleRotate(e, index)}
                             title="Rotate 90 degrees"
+                            disabled={rotatingIndex !== null}
                           >
-                              <RotateCw className="h-5 w-5" />
+                              {rotatingIndex === index ? (
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                              ) : (
+                                <RotateCw className="h-5 w-5" />
+                              )}
                           </Button>
                       </div>
                     </div>

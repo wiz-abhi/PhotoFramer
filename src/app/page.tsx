@@ -10,13 +10,13 @@ import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function Home() {
-  const { setImages } = useImages();
+  const { processAndSetImages } = useImages();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     setIsLoading(true);
     const files = event.target.files;
     if (files && files.length > 0) {
@@ -40,8 +40,7 @@ export default function Home() {
         return;
       }
 
-      const imageUrls = imageFiles.map(file => URL.createObjectURL(file));
-      setImages(imageUrls);
+      await processAndSetImages(imageFiles);
       router.push('/editor');
     } else {
       setIsLoading(false);

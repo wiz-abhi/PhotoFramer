@@ -25,7 +25,7 @@ const SIZES: CanvasSize[] = [
   { id: 'a4', name: 'A4', width: '210mm', height: '297mm', dpi: 300 },
   { id: 'a3', name: 'A3', width: '297mm', height: '420mm', dpi: 300 },
   { id: '4x6', name: '4x6 inches', width: '6in', height: '4in', dpi: 300 },
-  { id: '100x148', name: '100x148 mm', width: '148mm', height: '100mm', dpi: 300 },
+  { id: '100x148', name: '100x148 mm', width: '100mm', height: '148mm', dpi: 300 },
 ];
 
 const LAYOUTS: CanvasLayout[] = [
@@ -40,8 +40,8 @@ const LAYOUTS: CanvasLayout[] = [
 export type ObjectFit = 'cover' | 'contain';
 
 export default function EditorPage() {
-  const [canvasSize, setCanvasSize] = useState<CanvasSize>(SIZES[0]);
-  const [layout, setLayout] = useState<CanvasLayout>(LAYOUTS[0]);
+  const [canvasSize, setCanvasSize] = useState<CanvasSize>(SIZES.find(s => s.id === '100x148') || SIZES[0]);
+  const [layout, setLayout] = useState<CanvasLayout>(LAYOUTS.find(l => l.id === '3x3') || LAYOUTS[0]);
   const [globalObjectFit, setGlobalObjectFit] = useState<ObjectFit>('cover');
 
   const handlePrint = () => {
