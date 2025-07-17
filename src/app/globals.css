@@ -117,25 +117,28 @@ body {
     box-shadow: none;
     border: none;
   }
+  
+  .printable-area .frame-container {
+    border-color: transparent !important;
+  }
 
-  /* Hide empty frames and their borders when printing */
-  .frame-container.is-empty {
-    display: none;
+  .printable-area .frame-container.is-empty {
+    visibility: hidden;
   }
-  .frame-container {
-    border-color: transparent;
-    background-color: transparent;
-  }
-  .frame-container.is-empty .placeholder-content {
+  .printable-area .frame-container.is-empty .placeholder-content {
     display: none;
   }
 }
 
 /* Styles for saving the canvas as an image */
 .is-saving .frame-container {
-    border-color: transparent;
-    background-color: transparent;
+    border-color: transparent !important;
 }
+
+.is-saving .frame-container.is-empty {
+    visibility: hidden;
+}
+
 .is-saving .frame-container.is-empty .placeholder-content {
     display: none;
 }

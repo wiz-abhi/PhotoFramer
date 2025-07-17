@@ -178,7 +178,7 @@ export default function EditorCanvas({ size, layout, globalFit, placedImages, se
         }}
     >
         <div
-            className="grid h-full w-full p-2 gap-2"
+            className="grid h-full w-full p-0.5 gap-0.5"
             style={{
             gridTemplateRows: `repeat(${rows}, 1fr)`,
             gridTemplateColumns: `repeat(${cols}, 1fr)`,
@@ -191,7 +191,7 @@ export default function EditorCanvas({ size, layout, globalFit, placedImages, se
                     key={index}
                     className={cn(
                       'relative group border-2 border-dashed rounded-md flex items-center justify-center transition-colors overflow-hidden frame-container',
-                      image ? 'border-primary/50 bg-primary/10' : 'bg-muted/50 border-muted-foreground/50 is-empty'
+                      image ? 'border-transparent' : 'border-muted-foreground/50 is-empty'
                     )}
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, index)}
@@ -211,7 +211,8 @@ export default function EditorCanvas({ size, layout, globalFit, placedImages, se
                               ? 'contain' 
                               : `${image.zoom * 100}%`,
                             backgroundPosition: `${image.position.x}% ${image.position.y}%`,
-                            transition: 'background-size 0.2s ease-out'
+                            transition: 'background-size 0.2s ease-out',
+                            aspectRatio: '30 / 40',
                           }}
                         />
                         <div className="absolute top-2 right-2 flex flex-col space-y-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
