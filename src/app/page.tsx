@@ -54,20 +54,6 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center p-4">
-      <div className="absolute top-4 right-4">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Info className="h-5 w-5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Yes! This app works without internet after the first visit.</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
       <Card className="w-full max-w-lg text-center shadow-2xl animate-fade-in-up">
         <CardHeader>
           <div className="mx-auto bg-primary/20 text-primary p-3 rounded-full mb-4">
