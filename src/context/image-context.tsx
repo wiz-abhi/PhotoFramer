@@ -7,6 +7,7 @@ type ImageContextType = {
   setImages: Dispatch<SetStateAction<string[]>>;
   rotateImage: (index: number) => Promise<void>;
   processAndSetImages: (files: File[]) => Promise<void>;
+  addImages: (files: File[]) => Promise<void>;
 };
 
 const ImageContext = createContext<ImageContextType | undefined>(undefined);
@@ -69,8 +70,13 @@ export function ImageProvider({ children }: { children: ReactNode }) {
       setImages(blobUrls);
   }
 
+  const addImages = async (files: File[]) => {
+    const blobUrls = files.map(file => URL.createObjectURL(file));
+    setImages(prevImages => [...prevImages, ...blobUrls]);
+  }
+
   return (
-    <ImageContext.Provider value={{ images, setImages, rotateImage, processAndSetImages }}>
+    <ImageContext.Provider value={{ images, setImages, rotateImage, processAndSetImages, addImages }}>
       {children}
     </ImageContext.Provider>
   );

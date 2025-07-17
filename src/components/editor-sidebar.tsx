@@ -7,10 +7,11 @@ import Image from 'next/image';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { CanvasSize, CanvasLayout, ObjectFit } from '@/app/editor/page';
-import { Image as ImageIcon, ArrowLeftRight, RotateCw, Loader2 } from 'lucide-react';
+import { Image as ImageIcon, ArrowLeftRight, RotateCw, Loader2, PlusCircle } from 'lucide-react';
 import { Button } from './ui/button';
-import { useState } from 'react';
+import { useState, useRef, ChangeEvent } from 'react';
 import { Separator } from './ui/separator';
+import { useToast } from '@/hooks/use-toast';
 
 interface EditorSidebarProps {
   sizes: CanvasSize[];
@@ -33,8 +34,11 @@ export default function EditorSidebar({
   onToggleGlobalFit,
   globalFit
 }: EditorSidebarProps) {
-  const { images, rotateImage } = useImages();
+  const { images, rotateImage, addImages } = useImages();
   const [rotatingIndex, setRotatingIndex] = useState<number | null>(null);
+  const [isAddingImages, setIsAddingImages] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, imageUrl: string) => {
     e.dataTransfer.setData('text/plain', imageUrl);
@@ -49,11 +53,58 @@ export default function EditorSidebar({
     setRotatingIndex(null);
   }
 
+  const handleAddImagesClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    setIsAddingImages(true);
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+      
+      if(imageFiles.length !== files.length) {
+        toast({
+          variant: "destructive",
+          title: "Invalid File Type",
+          description: "Some files were not images and have been ignored.",
+        });
+      }
+
+      if(imageFiles.length > 0) {
+        await addImages(imageFiles);
+      }
+    }
+    // Reset file input
+    if(event.target) {
+        event.target.value = "";
+    }
+    setIsAddingImages(false);
+  };
+
+
   return (
     <aside className="w-80 border-r bg-background flex flex-col">
+       <input
+            type="file"
+            multiple
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+            disabled={isAddingImages}
+        />
       <div className="flex-1 min-h-0 flex flex-col">
-        <div className="p-4 border-b">
+        <div className="p-4 border-b flex items-center justify-between">
           <h2 className="text-xl font-semibold">Your Images</h2>
+          <Button variant="ghost" size="sm" onClick={handleAddImagesClick} disabled={isAddingImages}>
+              {isAddingImages ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <PlusCircle className="mr-2 h-4 w-4" />
+              )}
+              Add
+          </Button>
         </div>
         <div className="flex-1 min-h-0">
           <ScrollArea className="h-full p-4">
@@ -87,9 +138,9 @@ export default function EditorSidebar({
                 ))}
                 </div>
             ) : (
-                <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4 text-center">
                     <ImageIcon className="w-16 h-16 mb-4" />
-                    <p className="text-center">Upload images on the home page to see them here.</p>
+                    <p>Click &quot;Add&quot; to upload images.</p>
                 </div>
             )}
           </ScrollArea>
