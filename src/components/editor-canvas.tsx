@@ -5,7 +5,7 @@ import { useState, DragEvent, useEffect } from 'react';
 import type { CanvasSize, CanvasLayout } from '@/app/editor/page';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
-import { ImageIcon, Trash2, SwitchHorizontal } from 'lucide-react';
+import { ImageIcon, Trash2, ArrowLeftRight } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface EditorCanvasProps {
@@ -112,7 +112,7 @@ export default function EditorCanvas({ size, layout }: EditorCanvasProps) {
                                 onClick={() => toggleObjectFit(index)}
                                 title="Toggle image fit"
                                 >
-                                    <SwitchHorizontal className="h-4 w-4" />
+                                    <ArrowLeftRight className="h-4 w-4" />
                             </Button>
                         </div>
                     </>
