@@ -22,7 +22,7 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#E6F7FF" />
       </head>
-      <body className={cn('font-body antialiased', inter.variable)}>
+      <body className={cn('font-body antialiased', inter.variable)} suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>
