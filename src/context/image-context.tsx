@@ -11,7 +11,7 @@ type ImageContextType = {
 
 const ImageContext = createContext<ImageContextType | undefined>(undefined);
 
-async function rotateImageUtil(imageUrl: string): Promise<string> {
+async function rotateImageUtil(imageUrl: string, direction: 'cw' | 'ccw' = 'cw'): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new window.Image();
     img.crossOrigin = 'anonymous';
@@ -27,7 +27,8 @@ async function rotateImageUtil(imageUrl: string): Promise<string> {
       }
       
       ctx.translate(canvas.width / 2, canvas.height / 2);
-      ctx.rotate(90 * Math.PI / 180);
+      const angle = direction === 'cw' ? 90 : -90;
+      ctx.rotate(angle * Math.PI / 180);
       ctx.drawImage(img, -img.width / 2, -img.height / 2);
       
       const newImageUrl = canvas.toDataURL();
@@ -52,7 +53,7 @@ export function ImageProvider({ children }: { children: ReactNode }) {
     if (!imageUrl) return;
 
     try {
-        const newImageUrl = await rotateImageUtil(imageUrl);
+        const newImageUrl = await rotateImageUtil(imageUrl, 'cw'); // Manual rotate is clockwise
         setImages(prevImages => {
           const newImages = [...prevImages];
           newImages[index] = newImageUrl;
@@ -67,7 +68,7 @@ export function ImageProvider({ children }: { children: ReactNode }) {
       const blobUrls = files.map(file => URL.createObjectURL(file));
 
       const rotatedImageUrls = await Promise.all(
-          blobUrls.map(url => rotateImageUtil(url))
+          blobUrls.map(url => rotateImageUtil(url, 'ccw')) // Auto-rotate is anti-clockwise
       );
       
       setImages(rotatedImageUrls);
