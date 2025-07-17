@@ -63,7 +63,23 @@ export default function EditorPage() {
   }
 
   const handlePlaceImage = (imageUrl: string) => {
-    const nextEmptyIndex = placedImages.findIndex(img => img === null);
+    const [rows, cols] = layout.grid;
+    let nextEmptyIndex = -1;
+
+    // Iterate column by column, then row by row
+    for (let c = 0; c < cols; c++) {
+      for (let r = 0; r < rows; r++) {
+        const index = r * cols + c;
+        if (placedImages[index] === null) {
+          nextEmptyIndex = index;
+          break; // Exit inner loop
+        }
+      }
+      if (nextEmptyIndex !== -1) {
+        break; // Exit outer loop
+      }
+    }
+    
     if (nextEmptyIndex !== -1) {
       const newPlacedImages = [...placedImages];
       newPlacedImages[nextEmptyIndex] = {
