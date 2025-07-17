@@ -1,11 +1,7 @@
 {
-  "name": "PhotoFramer",
+  "name": "Photo Frame Factory",
   "short_name": "PhotoFramer",
   "description": "Create and print custom photo layouts.",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#E6F7FF",
-  "theme_color": "#59BFFF",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
@@ -29,5 +25,10 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "theme_color": "#E6F7FF",
+  "background_color": "#E6F7FF",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait"
 }
