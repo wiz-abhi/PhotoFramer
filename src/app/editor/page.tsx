@@ -46,7 +46,7 @@ const LAYOUTS: CanvasLayout[] = [
 export type ObjectFit = 'cover' | 'contain';
 
 export default function EditorPage() {
-  const [canvasSize, setCanvasSize] = useState<CanvasSize>(SIZES.find(s => s.id === '100x148') || SIZES[0]);
+  const [canvasSize, setCanvasSize] = useState<CanvasSize>(SIZES.find(s => s.id === 'a4') || SIZES[0]);
   const [layout, setLayout] = useState<CanvasLayout>(LAYOUTS.find(l => l.id === '3x3') || LAYOUTS[0]);
   const [globalObjectFit, setGlobalObjectFit] = useState<ObjectFit>('cover');
   const [placedImages, setPlacedImages] = useState<(PlacedImage | null)[]>([]);
