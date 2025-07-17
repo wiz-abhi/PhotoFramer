@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, DragEvent, Dispatch, SetStateAction } from 'react';
+import { useState, DragEvent, Dispatch, SetStateAction, useEffect, useRef } from 'react';
 import type { CanvasSize, CanvasLayout, ObjectFit } from '@/app/editor/page';
 import { cn } from '@/lib/utils';
 import { ImageIcon, Trash2, ArrowLeftRight } from 'lucide-react';
@@ -41,6 +41,7 @@ export default function EditorCanvas({ size, layout, globalFit, placedImages, se
   const totalFrames = rows * cols;
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [editingImage, setEditingImage] = useState<EditingState | null>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
@@ -93,49 +94,51 @@ export default function EditorCanvas({ size, layout, globalFit, placedImages, se
         initialX: imageState.position.x,
         initialY: imageState.position.y
     });
+  };
 
+  useEffect(() => {
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      setDragState(currentDragState => {
-        if (!currentDragState) {
-          return null;
-        }
-        const dx = moveEvent.clientX - currentDragState.startX;
-        const dy = moveEvent.clientY - currentDragState.startY;
-    
-        const frame = (e.target as HTMLElement).closest('.image-frame');
-        if (!frame) return currentDragState;
-    
-        const deltaX = (dx / frame.clientWidth) * 100;
-        const deltaY = (dy / frame.clientHeight) * 100;
-        
-        let newX = currentDragState.initialX - deltaX;
-        let newY = currentDragState.initialY - deltaY;
-    
-        newX = Math.max(0, Math.min(100, newX));
-        newY = Math.max(0, Math.min(100, newY));
-        
-        setPlacedImages(current => {
-            const newImages = [...current];
-            const image = newImages[currentDragState.index];
-            if (image) {
-                image.position = { x: newX, y: newY };
-            }
-            return newImages;
-        });
+      if (!dragState) return;
 
-        return currentDragState;
+      const dx = moveEvent.clientX - dragState.startX;
+      const dy = moveEvent.clientY - dragState.startY;
+  
+      const frame = canvasRef.current?.querySelector(`[data-frame-index='${dragState.index}'] .image-frame`);
+      if (!frame) return;
+  
+      const deltaX = (dx / frame.clientWidth) * 100;
+      const deltaY = (dy / frame.clientHeight) * 100;
+      
+      let newX = dragState.initialX - deltaX;
+      let newY = dragState.initialY - deltaY;
+  
+      newX = Math.max(0, Math.min(100, newX));
+      newY = Math.max(0, Math.min(100, newY));
+      
+      setPlacedImages(current => {
+          const newImages = [...current];
+          const image = newImages[dragState.index];
+          if (image) {
+              image.position = { x: newX, y: newY };
+          }
+          return newImages;
       });
     }
 
     const handleMouseUp = () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
         setDragState(null);
     }
+    
+    if (dragState) {
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    }
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  };
+    return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+    }
+  }, [dragState, setPlacedImages]);
 
 
   const handleDoubleClick = (index: number) => {
@@ -168,6 +171,7 @@ export default function EditorCanvas({ size, layout, globalFit, placedImages, se
     <>
     <div 
         id="printable-area"
+        ref={canvasRef}
         className="bg-white shadow-lg mx-auto transition-all duration-300 ease-in-out printable-area"
         style={{
             width: size.width,
@@ -189,6 +193,7 @@ export default function EditorCanvas({ size, layout, globalFit, placedImages, se
               return (
                 <div
                     key={index}
+                    data-frame-index={index}
                     className={cn(
                       'relative group border-2 border-dashed rounded-md flex items-center justify-center transition-colors overflow-hidden frame-container',
                       image ? 'border-transparent' : 'border-muted-foreground/50 is-empty'
