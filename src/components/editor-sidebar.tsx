@@ -1,7 +1,7 @@
+
 'use client';
 
 import { useImages } from '@/context/image-context';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Image from 'next/image';
 import { Label } from '@/components/ui/label';
@@ -10,6 +10,7 @@ import type { CanvasSize, CanvasLayout, ObjectFit } from '@/app/editor/page';
 import { Image as ImageIcon, ArrowLeftRight, RotateCw, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useState } from 'react';
+import { Separator } from './ui/separator';
 
 interface EditorSidebarProps {
   sizes: CanvasSize[];
@@ -50,12 +51,11 @@ export default function EditorSidebar({
 
   return (
     <aside className="w-80 border-r bg-background flex flex-col">
-      <div className="flex-1 min-h-0">
-      <Card className="h-full rounded-none border-t-0 border-b-0 border-x-0">
-        <CardHeader className="border-b">
-          <CardTitle>Your Images</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0 h-[calc(100%-4rem)]">
+      <div className="flex-1 min-h-0 flex flex-col">
+        <div className="p-4 border-b">
+          <h2 className="text-xl font-semibold">Your Images</h2>
+        </div>
+        <div className="flex-1 min-h-0">
           <ScrollArea className="h-full p-4">
             {images.length > 0 ? (
                 <div className="grid grid-cols-2 gap-4">
@@ -93,13 +93,13 @@ export default function EditorSidebar({
                 </div>
             )}
           </ScrollArea>
-        </CardContent>
-      </Card>
+        </div>
       </div>
-       <div className="p-4 border-t">
+       <Separator />
+      <div className="p-4 border-t">
         <h2 className="text-xl font-semibold">Controls</h2>
       </div>
-      <div className="p-4 space-y-6">
+      <div className="p-4 pt-0 space-y-6">
         <div>
           <Label htmlFor="canvas-size" className='text-base'>Canvas Size</Label>
           <Select
