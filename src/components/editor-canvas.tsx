@@ -164,96 +164,85 @@ export default function EditorCanvas({ size, layout, globalFit, placedImages, se
   return (
     <>
     <div 
-        id="printable-area" 
-        className="printable-area"
+        id="printable-area"
+        className="bg-white shadow-lg mx-auto transition-all duration-300 ease-in-out printable-area"
         style={{
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
+            width: size.width,
+            height: size.height,
+            maxWidth: '100%',
+            maxHeight: '100%',
+            aspectRatio: `auto ${parseInt(size.width)} / ${parseInt(size.height)}`
         }}
     >
         <div
-            className="bg-white shadow-lg mx-auto transition-all duration-300 ease-in-out"
+            className="grid h-full w-full p-2 gap-2"
             style={{
-                width: size.width,
-                height: size.height,
-                maxWidth: '100%',
-                maxHeight: '100%',
-                aspectRatio: `auto ${parseInt(size.width)} / ${parseInt(size.height)}`
+            gridTemplateRows: `repeat(${rows}, 1fr)`,
+            gridTemplateColumns: `repeat(${cols}, 1fr)`,
             }}
         >
+            {Array.from({ length: totalFrames }).map((_, index) => (
             <div
-                className="grid h-full w-full p-2 gap-2"
-                style={{
-                gridTemplateRows: `repeat(${rows}, 1fr)`,
-                gridTemplateColumns: `repeat(${cols}, 1fr)`,
-                }}
+                key={index}
+                className={cn(
+                'relative group border-2 border-dashed rounded-md flex items-center justify-center transition-colors overflow-hidden',
+                placedImages[index] ? 'border-primary/50 bg-primary/10' : 'bg-muted/50 border-muted-foreground/50'
+                )}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, index)}
+                onDoubleClick={() => handleDoubleClick(index)}
             >
-                {Array.from({ length: totalFrames }).map((_, index) => (
-                <div
-                    key={index}
-                    className={cn(
-                    'relative group border-2 border-dashed rounded-md flex items-center justify-center transition-colors overflow-hidden',
-                    placedImages[index] ? 'border-primary/50 bg-primary/10' : 'bg-muted/50 border-muted-foreground/50'
-                    )}
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, index)}
-                    onDoubleClick={() => handleDoubleClick(index)}
-                >
-                    {placedImages[index] ? (
-                    <>
-                        <Image
-                            src={placedImages[index]!.src}
-                            alt={`Placed image ${index}`}
-                            layout="fill"
-                            objectFit={placedImages[index]!.objectFit}
-                            style={{ 
-                                objectPosition: `${placedImages[index]!.position.x}% ${placedImages[index]!.position.y}%`,
-                                transform: `scale(${placedImages[index]!.zoom})`,
-                                transition: 'transform 0.2s ease-out',
-                            }}
-                            className={cn(
-                                'rounded-sm',
-                                placedImages[index]!.objectFit === 'cover' && 'cursor-grab active:cursor-grabbing'
-                            )}
-                            draggable={placedImages[index]!.objectFit === 'cover'}
-                            onDragStart={(e) => onImageDragStart(e, index)}
-                            onDrag={onImageDrag}
-                            onDragEnd={onImageDragEnd}
-                            // Prevent native drag ghost for panning
-                            onDragEnter={(e) => e.preventDefault()}
-                        />
-                        <div className="absolute top-2 right-2 flex flex-col space-y-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                            <Button 
-                                variant="destructive" 
-                                size="icon" 
-                                className="h-7 w-7"
-                                onClick={() => removeImage(index)}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                            </Button>
-                             <Button 
-                                variant="secondary" 
-                                size="icon" 
-                                className="h-7 w-7"
-                                onClick={() => toggleObjectFit(index)}
-                                title="Toggle image fit"
-                                >
-                                    <ArrowLeftRight className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </>
-                    ) : (
-                    <div className="text-center text-muted-foreground">
-                        <ImageIcon className="mx-auto h-8 w-8 mb-1" />
-                        <p className="text-xs">Drop image here</p>
+                {placedImages[index] ? (
+                <>
+                    <Image
+                        src={placedImages[index]!.src}
+                        alt={`Placed image ${index}`}
+                        layout="fill"
+                        objectFit={placedImages[index]!.objectFit}
+                        style={{ 
+                            objectPosition: `${placedImages[index]!.position.x}% ${placedImages[index]!.position.y}%`,
+                            transform: `scale(${placedImages[index]!.zoom})`,
+                            transition: 'transform 0.2s ease-out',
+                        }}
+                        className={cn(
+                            'rounded-sm',
+                            placedImages[index]!.objectFit === 'cover' && 'cursor-grab active:cursor-grabbing'
+                        )}
+                        draggable={placedImages[index]!.objectFit === 'cover'}
+                        onDragStart={(e) => onImageDragStart(e, index)}
+                        onDrag={onImageDrag}
+                        onDragEnd={onImageDragEnd}
+                        // Prevent native drag ghost for panning
+                        onDragEnter={(e) => e.preventDefault()}
+                    />
+                    <div className="absolute top-2 right-2 flex flex-col space-y-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        <Button 
+                            variant="destructive" 
+                            size="icon" 
+                            className="h-7 w-7"
+                            onClick={() => removeImage(index)}
+                            >
+                                <Trash2 className="h-4 w-4" />
+                        </Button>
+                         <Button 
+                            variant="secondary" 
+                            size="icon" 
+                            className="h-7 w-7"
+                            onClick={() => toggleObjectFit(index)}
+                            title="Toggle image fit"
+                            >
+                                <ArrowLeftRight className="h-4 w-4" />
+                        </Button>
                     </div>
-                    )}
+                </>
+                ) : (
+                <div className="text-center text-muted-foreground">
+                    <ImageIcon className="mx-auto h-8 w-8 mb-1" />
+                    <p className="text-xs">Drop image here</p>
                 </div>
-                ))}
+                )}
             </div>
+            ))}
         </div>
     </div>
     {editingImage && (

@@ -63,9 +63,10 @@ export default function EditorPage() {
     if (printableArea) {
       try {
         const canvas = await html2canvas(printableArea, {
-            scale: 2, // Higher scale for better quality
-            useCORS: true, // Important for external images
+            scale: 3, // Higher scale for better quality, 3 is a good balance
+            useCORS: true, 
             logging: false,
+            backgroundColor: '#ffffff' // Ensure background is white for saved image
         });
         const dataUrl = canvas.toDataURL('image/png');
         const link = document.createElement('a');
@@ -76,7 +77,7 @@ export default function EditorPage() {
         document.body.removeChild(link);
         toast({
             title: "Frame Saved",
-            description: "Your frame has been downloaded as a PNG.",
+            description: "Your frame has been downloaded as a high-quality PNG.",
         });
       } catch (error) {
         console.error("Failed to save canvas:", error);

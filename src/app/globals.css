@@ -89,22 +89,30 @@ body {
 }
 
 @media print {
+  body, html {
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
   body * {
     visibility: hidden;
   }
-
+  
   .printable-area, .printable-area * {
     visibility: visible;
   }
 
   .printable-area {
-    position: absolute;
+    position: fixed;
     left: 0;
     top: 0;
     width: 100vw;
     height: 100vh;
     padding: 0;
     margin: 0;
+    transform: scale(1);
+    box-shadow: none;
+    border: none;
   }
 
   @page {
