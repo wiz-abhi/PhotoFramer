@@ -66,12 +66,7 @@ export function ImageProvider({ children }: { children: ReactNode }) {
 
   const processAndSetImages = async (files: File[]) => {
       const blobUrls = files.map(file => URL.createObjectURL(file));
-
-      const rotatedImageUrls = await Promise.all(
-          blobUrls.map(url => rotateImageUtil(url, 'ccw')) // Auto-rotate is anti-clockwise
-      );
-      
-      setImages(rotatedImageUrls);
+      setImages(blobUrls);
   }
 
   return (
