@@ -1,0 +1,33 @@
+{
+  "name": "PhotoFramer",
+  "short_name": "PhotoFramer",
+  "description": "Create and print custom photo layouts.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E6F7FF",
+  "theme_color": "#59BFFF",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

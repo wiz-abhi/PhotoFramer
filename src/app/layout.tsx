@@ -10,6 +10,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-body' });
 export const metadata: Metadata = {
   title: 'PhotoFramer',
   description: 'Create and print custom photo layouts.',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
