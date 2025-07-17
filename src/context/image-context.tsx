@@ -54,7 +54,7 @@ export function ImageProvider({ children }: { children: ReactNode }) {
     if (!imageUrl) return;
 
     try {
-        const newImageUrl = await rotateImageUtil(imageUrl, 'cw'); // Manual rotate is clockwise
+        const newImageUrl = await rotateImageUtil(imageUrl, 'ccw'); // Manual rotate is counter-clockwise
         setImages(prevImages => {
           const newImages = [...prevImages];
           newImages[index] = newImageUrl;
