@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
@@ -8,7 +9,7 @@ import Script from 'next/script';
 const inter = Inter({ subsets: ['latin'], variable: '--font-body' });
 
 export const metadata: Metadata = {
-  title: 'Photo Frame Factory',
+  title: 'PhotoFramer',
   description: 'Create and print custom photo layouts.',
 };
 

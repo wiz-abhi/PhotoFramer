@@ -73,9 +73,8 @@ export default function Home() {
           <div className="mx-auto bg-primary/20 text-primary p-3 rounded-full mb-4">
              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-gallery-vertical-end"><path d="M4 4v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4"/><path d="M12 4v10"/><rect width="18" height="6" x="3" y="2"/><path d="m3 12 5-3 3 3 5-4 4 4"/></svg>
           </div>
-          <CardTitle className="text-3xl font-bold">Photo Frame Factory</CardTitle>
+          <CardTitle className="text-3xl font-bold">PhotoFramer</CardTitle>
           <CardDescription className="text-lg text-muted-foreground pt-2">
-            Upload your memories, arrange them in beautiful layouts, and get them ready for printing.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-6 pt-0">
