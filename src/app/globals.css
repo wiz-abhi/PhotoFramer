@@ -93,6 +93,7 @@ body {
   @page {
     size: auto;
     margin: 0;
+    margin-left: 1mm;
   }
   body, html {
     margin: 0;
