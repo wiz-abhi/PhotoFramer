@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import EditorSidebar from '@/components/editor-sidebar';
 import EditorCanvas, { PlacedImage } from '@/components/editor-canvas';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Printer, Save, History } from 'lucide-react';
+import { ArrowLeft, Printer, Save, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import html2canvas from 'html2canvas';
 
 export type CanvasSize = {
   id: string;
@@ -40,21 +41,13 @@ const LAYOUTS: CanvasLayout[] = [
 
 export type ObjectFit = 'cover' | 'contain';
 
-const LOCAL_STORAGE_KEY = 'photoFrameFactoryState';
-
-type SavedState = {
-  canvasSizeId: string;
-  layoutId: string;
-  globalObjectFit: ObjectFit;
-  placedImages: (PlacedImage | null)[];
-};
-
 export default function EditorPage() {
   const [canvasSize, setCanvasSize] = useState<CanvasSize>(SIZES.find(s => s.id === '100x148') || SIZES[0]);
   const [layout, setLayout] = useState<CanvasLayout>(LAYOUTS.find(l => l.id === '3x3') || LAYOUTS[0]);
   const [globalObjectFit, setGlobalObjectFit] = useState<ObjectFit>('cover');
   const [placedImages, setPlacedImages] = useState<(PlacedImage | null)[]>([]);
   const { toast } = useToast();
+  const [isSaving, setIsSaving] = useState(false);
 
   const handlePrint = () => {
     window.print();
@@ -64,67 +57,44 @@ export default function EditorPage() {
     setGlobalObjectFit(prev => prev === 'cover' ? 'contain' : 'cover');
   }
 
-  const handleSave = () => {
-    try {
-      const stateToSave: SavedState = {
-        canvasSizeId: canvasSize.id,
-        layoutId: layout.id,
-        globalObjectFit,
-        placedImages,
-      };
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stateToSave));
-      toast({
-        title: "Frame Saved",
-        description: "Your current layout has been saved successfully.",
-      });
-    } catch (error) {
-      console.error("Failed to save state:", error);
-      toast({
-        variant: "destructive",
-        title: "Save Failed",
-        description: "Could not save your frame. Your browser storage might be full.",
-      });
-    }
-  };
-
-  const handleLoad = () => {
-    try {
-      const savedStateJSON = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (savedStateJSON) {
-        const savedState: SavedState = JSON.parse(savedStateJSON);
-        const newSize = SIZES.find(s => s.id === savedState.canvasSizeId) || canvasSize;
-        const newLayout = LAYOUTS.find(l => l.id === savedState.layoutId) || layout;
-        
-        setCanvasSize(newSize);
-        setLayout(newLayout);
-        setGlobalObjectFit(savedState.globalObjectFit);
-        setPlacedImages(savedState.placedImages);
-
-        toast({
-          title: "Frame Loaded",
-          description: "Your last saved layout has been loaded.",
+  const handleSave = async () => {
+    setIsSaving(true);
+    const printableArea = document.getElementById('printable-area');
+    if (printableArea) {
+      try {
+        const canvas = await html2canvas(printableArea, {
+            scale: 2, // Higher scale for better quality
+            useCORS: true, // Important for external images
+            logging: false,
         });
-      } else {
+        const dataUrl = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = `photo-frame-${canvasSize.name.replace(/\s/g, '-')}-${layout.name.replace(/\s/g, '-')}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast({
+            title: "Frame Saved",
+            description: "Your frame has been downloaded as a PNG.",
+        });
+      } catch (error) {
+        console.error("Failed to save canvas:", error);
         toast({
             variant: "destructive",
-            title: "No Saved Frame",
-            description: "We couldn't find a previously saved frame.",
+            title: "Save Failed",
+            description: "Could not save your frame as an image.",
         });
       }
-    } catch (error) {
-      console.error("Failed to load state:", error);
-      toast({
-        variant: "destructive",
-        title: "Load Failed",
-        description: "Could not load your saved frame. The data may be corrupted.",
-      });
+    } else {
+        toast({
+            variant: "destructive",
+            title: "Save Error",
+            description: "Could not find the printable area.",
+        });
     }
+    setIsSaving(false);
   };
-
-  useEffect(() => {
-    handleLoad();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
   
 
   useEffect(() => {
@@ -163,13 +133,9 @@ export default function EditorPage() {
             </Button>
           <h1 className="text-xl font-semibold">Editor</h1>
           <div className='flex items-center gap-2'>
-            <Button onClick={handleLoad} variant="outline">
-                <History className="mr-2 h-4 w-4" />
-                Load
-            </Button>
-            <Button onClick={handleSave}>
-                <Save className="mr-2 h-4 w-4" />
-                Save
+            <Button onClick={handleSave} disabled={isSaving}>
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                {isSaving ? "Saving..." : "Save"}
             </Button>
             <Button onClick={handlePrint}>
                 <Printer className="mr-2 h-4 w-4" />
