@@ -4,7 +4,6 @@
 import { useState, DragEvent, Dispatch, SetStateAction } from 'react';
 import type { CanvasSize, CanvasLayout, ObjectFit } from '@/app/editor/page';
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
 import { ImageIcon, Trash2, ArrowLeftRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { ZoomDialog } from './zoom-dialog';
@@ -80,17 +79,12 @@ export default function EditorCanvas({ size, layout, globalFit, placedImages, se
     }
   };
 
-  const onImageDragStart = (e: DragEvent<HTMLImageElement>, index: number) => {
+  const onImagePanStart = (e: React.MouseEvent<HTMLDivElement>, index: number) => {
+    e.preventDefault();
     const imageState = placedImages[index];
     if (!imageState || imageState.objectFit === 'contain') {
-      e.preventDefault();
       return;
     }
-    // Set a transparent drag image
-    const img = document.createElement('img');
-    img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-    e.dataTransfer.setDragImage(img, 0, 0);
-    e.dataTransfer.effectAllowed = 'move';
 
     setDragState({
         index,
@@ -99,41 +93,43 @@ export default function EditorCanvas({ size, layout, globalFit, placedImages, se
         initialX: imageState.position.x,
         initialY: imageState.position.y
     });
-  }
 
-  const onImageDrag = (e: DragEvent<HTMLImageElement>) => {
-    if (!dragState || e.clientX === 0 || e.clientY === 0) return; // Ignore final drag event with 0,0 coordinates
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const dx = moveEvent.clientX - dragState.startX;
+      const dy = moveEvent.clientY - dragState.startY;
+  
+      const frame = (e.target as HTMLElement).closest('.image-frame');
+      if (!frame) return;
+  
+      const deltaX = (dx / frame.clientWidth) * 100;
+      const deltaY = (dy / frame.clientHeight) * 100;
+      
+      let newX = dragState.initialX - deltaX;
+      let newY = dragState.initialY - deltaY;
+  
+      newX = Math.max(0, Math.min(100, newX));
+      newY = Math.max(0, Math.min(100, newY));
+      
+      setPlacedImages(current => {
+          const newImages = [...current];
+          const image = newImages[dragState.index];
+          if (image) {
+              image.position = { x: newX, y: newY };
+          }
+          return newImages;
+      });
+    }
 
-    const frame = e.currentTarget.parentElement;
-    if (!frame) return;
+    const handleMouseUp = () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        setDragState(null);
+    }
 
-    const dx = e.clientX - dragState.startX;
-    const dy = e.clientY - dragState.startY;
-
-    // Normalize by frame dimensions for consistent speed
-    const deltaX = (dx / frame.clientWidth) * 100;
-    const deltaY = (dy / frame.clientHeight) * 100;
-    
-    let newX = dragState.initialX - deltaX;
-    let newY = dragState.initialY - deltaY;
-
-    // Clamp values between 0 and 100
-    newX = Math.max(0, Math.min(100, newX));
-    newY = Math.max(0, Math.min(100, newY));
-    
-    setPlacedImages(current => {
-        const newImages = [...current];
-        const image = newImages[dragState.index];
-        if (image) {
-            image.position = { x: newX, y: newY };
-        }
-        return newImages;
-    });
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
   };
 
-  const onImageDragEnd = () => {
-    setDragState(null);
-  }
 
   const handleDoubleClick = (index: number) => {
     const image = placedImages[index];
@@ -181,68 +177,65 @@ export default function EditorCanvas({ size, layout, globalFit, placedImages, se
             gridTemplateColumns: `repeat(${cols}, 1fr)`,
             }}
         >
-            {Array.from({ length: totalFrames }).map((_, index) => (
-            <div
-                key={index}
-                className={cn(
-                'relative group border-2 border-dashed rounded-md flex items-center justify-center transition-colors overflow-hidden',
-                placedImages[index] ? 'border-primary/50 bg-primary/10' : 'bg-muted/50 border-muted-foreground/50'
-                )}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, index)}
-                onDoubleClick={() => handleDoubleClick(index)}
-            >
-                {placedImages[index] ? (
-                <>
-                    <Image
-                        src={placedImages[index]!.src}
-                        alt={`Placed image ${index}`}
-                        layout="fill"
-                        objectFit={placedImages[index]!.objectFit}
-                        style={{ 
-                            objectPosition: `${placedImages[index]!.position.x}% ${placedImages[index]!.position.y}%`,
-                            transform: `scale(${placedImages[index]!.zoom})`,
-                            transition: 'transform 0.2s ease-out',
-                        }}
-                        className={cn(
-                            'rounded-sm',
-                            placedImages[index]!.objectFit === 'cover' && 'cursor-grab active:cursor-grabbing'
-                        )}
-                        draggable={placedImages[index]!.objectFit === 'cover'}
-                        onDragStart={(e) => onImageDragStart(e, index)}
-                        onDrag={onImageDrag}
-                        onDragEnd={onImageDragEnd}
-                        // Prevent native drag ghost for panning
-                        onDragEnter={(e) => e.preventDefault()}
-                    />
-                    <div className="absolute top-2 right-2 flex flex-col space-y-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                        <Button 
-                            variant="destructive" 
-                            size="icon" 
-                            className="h-7 w-7"
-                            onClick={() => removeImage(index)}
-                            >
-                                <Trash2 className="h-4 w-4" />
-                        </Button>
-                         <Button 
-                            variant="secondary" 
-                            size="icon" 
-                            className="h-7 w-7"
-                            onClick={() => toggleObjectFit(index)}
-                            title="Toggle image fit"
-                            >
-                                <ArrowLeftRight className="h-4 w-4" />
-                        </Button>
+            {Array.from({ length: totalFrames }).map((_, index) => {
+              const image = placedImages[index];
+              return (
+                <div
+                    key={index}
+                    className={cn(
+                    'relative group border-2 border-dashed rounded-md flex items-center justify-center transition-colors overflow-hidden',
+                    image ? 'border-primary/50 bg-primary/10' : 'bg-muted/50 border-muted-foreground/50'
+                    )}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, index)}
+                    onDoubleClick={() => handleDoubleClick(index)}
+                >
+                    {image ? (
+                    <>
+                        <div
+                          className={cn(
+                            'w-full h-full rounded-sm bg-no-repeat image-frame',
+                            image.objectFit === 'cover' ? 'cursor-grab active:cursor-grabbing' : ''
+                          )}
+                          onMouseDown={image.objectFit === 'cover' ? (e) => onImagePanStart(e, index) : undefined}
+                          style={{
+                            backgroundImage: `url('${image.src}')`,
+                            backgroundSize: image.objectFit === 'contain' 
+                              ? 'contain' 
+                              : `${image.zoom * 100}%`,
+                            backgroundPosition: `${image.position.x}% ${image.position.y}%`,
+                            transition: 'background-size 0.2s ease-out'
+                          }}
+                        />
+                        <div className="absolute top-2 right-2 flex flex-col space-y-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                            <Button 
+                                variant="destructive" 
+                                size="icon" 
+                                className="h-7 w-7"
+                                onClick={() => removeImage(index)}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                                variant="secondary" 
+                                size="icon" 
+                                className="h-7 w-7"
+                                onClick={() => toggleObjectFit(index)}
+                                title="Toggle image fit"
+                                >
+                                    <ArrowLeftRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </>
+                    ) : (
+                    <div className="text-center text-muted-foreground">
+                        <ImageIcon className="mx-auto h-8 w-8 mb-1" />
+                        <p className="text-xs">Drop image here</p>
                     </div>
-                </>
-                ) : (
-                <div className="text-center text-muted-foreground">
-                    <ImageIcon className="mx-auto h-8 w-8 mb-1" />
-                    <p className="text-xs">Drop image here</p>
+                    )}
                 </div>
-                )}
-            </div>
-            ))}
+              )
+            })}
         </div>
     </div>
     {editingImage && (
@@ -256,3 +249,4 @@ export default function EditorCanvas({ size, layout, globalFit, placedImages, se
     </>
   );
 }
+
