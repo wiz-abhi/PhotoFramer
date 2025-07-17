@@ -31,7 +31,7 @@ const SIZES: CanvasSize[] = [
   { id: 'a4', name: 'A4', width: '210mm', height: '297mm', dpi: 300 },
   { id: 'a3', name: 'A3', width: '297mm', height: '420mm', dpi: 300 },
   { id: '4x6', name: '4x6 inches', width: '6in', height: '4in', dpi: 300 },
-  { id: '100x148', name: '100x148 mm', width: '100mm', height: '148mm', dpi: 300 },
+  { id: '100x148', name: '100x148 mm', width: '148mm', height: '100mm', dpi: 300 },
 ];
 
 const LAYOUTS: CanvasLayout[] = [
