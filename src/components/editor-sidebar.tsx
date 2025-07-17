@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { CanvasSize, CanvasLayout, ObjectFit } from '@/app/editor/page';
-import { Image as ImageIcon, ArrowLeftRight } from 'lucide-react';
+import { Image as ImageIcon, ArrowLeftRight, RotateCw } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface EditorSidebarProps {
@@ -31,11 +31,17 @@ export default function EditorSidebar({
   onToggleGlobalFit,
   globalFit
 }: EditorSidebarProps) {
-  const { images } = useImages();
+  const { images, rotateImage } = useImages();
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, imageUrl: string) => {
     e.dataTransfer.setData('text/plain', imageUrl);
   };
+
+  const handleRotate = (e: React.MouseEvent, index: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    rotateImage(index);
+  }
 
   return (
     <aside className="w-80 border-r bg-background flex flex-col">
@@ -100,12 +106,23 @@ export default function EditorSidebar({
                 <div className="grid grid-cols-2 gap-4">
                 {images.map((src, index) => (
                     <div
-                    key={index}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, src)}
-                    className="aspect-square relative rounded-md overflow-hidden cursor-grab active:cursor-grabbing transition-transform hover:scale-105"
+                      key={index}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, src)}
+                      className="group aspect-square relative rounded-md overflow-hidden cursor-grab active:cursor-grabbing transition-transform hover:scale-105"
                     >
-                    <Image src={src} alt={`Uploaded image ${index + 1}`} layout="fill" objectFit="cover" />
+                      <Image src={src} alt={`Uploaded image ${index + 1}`} layout="fill" objectFit="cover" />
+                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-white hover:bg-white/20 hover:text-white h-10 w-10"
+                            onClick={(e) => handleRotate(e, index)}
+                            title="Rotate 90 degrees"
+                          >
+                              <RotateCw className="h-5 w-5" />
+                          </Button>
+                      </div>
                     </div>
                 ))}
                 </div>
